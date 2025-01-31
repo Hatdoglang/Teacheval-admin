@@ -1,20 +1,11 @@
-# Use official PHP image
-FROM php:8.0-cli
+# Use an official PHP image
+FROM php:8.1-apache
 
-# Install dependencies (if needed)
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies (if required)
+RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Set the working directory
-WORKDIR /var/www/html
+# Copy project files
+COPY . /var/www/html/
 
-# Copy the application files into the container
-COPY . .
-
-# Expose the port
-EXPOSE 8080
-
-# Start the PHP built-in server
-CMD ["php", "-S", "0.0.0.0:8080"]
+# Expose the default Apache port
+EXPOSE 80
