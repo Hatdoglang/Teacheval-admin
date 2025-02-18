@@ -17,7 +17,7 @@
                             <th>School ID</th>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Average Rating</th> <!-- New column for Average Rating -->
+                            <th>Average Rating</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
@@ -47,15 +47,17 @@
                             <td><b><?php echo $row['email'] ?></b></td>
                             <td><b><?php echo number_format($row['average_rating'], 2) ?></b></td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-default btn-sm btn-flat border-info wave-effect text-info dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
-                                    Action
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item view_faculty" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>">View</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="./index.php?page=edit_faculty&id=<?php echo $row['id'] ?>">Edit</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item delete_faculty" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>">Delete</a>
+                                <div class="dropdown">
+                                    <button type="button" class="btn btn-default btn-sm btn-flat border-info wave-effect text-info dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                                        Action
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item view_faculty" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>">View</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="./index.php?page=edit_faculty&id=<?php echo $row['id'] ?>">Edit</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item delete_faculty" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>">Delete</a>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -75,14 +77,30 @@
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 
+<!-- Fix Dropdown Click Issues on Mobile -->
+<style>
+    .dropdown-menu {
+        position: absolute !important;
+        z-index: 1050 !important;
+    }
+    .dropdown-menu .dropdown-item {
+        pointer-events: auto !important;
+    }
+</style>
+
 <script>
     $(document).ready(function(){
-        $('.view_faculty').click(function(){
-            uni_modal("<i class='fa fa-id-card'></i> Faculty Details", "<?php echo $_SESSION['login_view_folder'] ?>view_faculty.php?id=" + $(this).attr('data-id'));
+        // Use event delegation to handle dynamic elements
+        $(document).on('click', '.view_faculty', function(e){
+            e.stopPropagation(); // Prevent dropdown from closing on click
+            let faculty_id = $(this).data('id');
+            uni_modal("<i class='fa fa-id-card'></i> Faculty Details", "<?php echo $_SESSION['login_view_folder'] ?>view_faculty.php?id=" + faculty_id);
         });
 
-        $('.delete_faculty').click(function(){
-            _conf("Are you sure to delete this faculty?", "delete_faculty", [$(this).attr('data-id')]);
+        $(document).on('click', '.delete_faculty', function(e){
+            e.stopPropagation(); // Prevent dropdown from closing
+            let faculty_id = $(this).data('id');
+            _conf("Are you sure to delete this faculty?", "delete_faculty", [faculty_id]);
         });
 
         // Initialize DataTable with responsive support
