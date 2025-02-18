@@ -333,6 +333,27 @@ if (isset($_GET['id'])) {
         width: 1000px;
         margin-left: -120px;
     }
+    
+@media (max-width: 768px) {
+    #uni_modal .modal-content {
+        width: 95%; /* Increase width for smaller screens */
+        margin-left: 0; /* Remove negative margin */
+    }
+
+    #uni_modal .modal-footer.display {
+        margin-left: 0;
+    }
+}
+.chart-container {
+    width: 100%;
+    max-width: 1000px; /* Adjust as needed */
+    overflow-x: auto; /* Enables horizontal scrolling if necessary */
+}
+
+canvas {
+    width: 100% !important;
+    height: auto !important;
+}
 </style>
 
 <!-- Chart.js Script -->
