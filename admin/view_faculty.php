@@ -172,10 +172,10 @@ if (isset($_GET['id'])) {
     foreach ($unique_comments as $comment) {
         list($sentiment, $phrase) = handle_phrases($comment, $positive_words, $negative_words, $stop_words);
 
-        // Log the detected sentiment and the matching phrase
-        echo "Comment: \"$comment\"<br>";
-        echo "Sentiment: $sentiment<br>";
-        echo "Matching Phrase: $phrase<br><br>";
+        // // Log the detected sentiment and the matching phrase
+        // echo "Comment: \"$comment\"<br>";
+        // echo "Sentiment: $sentiment<br>";
+        // echo "Matching Phrase: $phrase<br><br>";
 
         if ($sentiment == 'positive') {
             $positive_count++;
