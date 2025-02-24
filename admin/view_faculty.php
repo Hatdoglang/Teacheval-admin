@@ -91,7 +91,8 @@ if (isset($_GET['id'])) {
         'He',
         'She',
         'His',
-        'his'
+        'his',
+        'really'
     ];
 
     // Positive and negative phrases for context-aware sentiment analysis
