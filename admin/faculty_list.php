@@ -14,8 +14,7 @@
                     <thead>
                         <tr>
                             <th class="text-center">#</th>
-                            <th>School ID</th>
-                            <th>Name</th>
+                            <th>Full Name</th>
                             <th>Email</th>
                             <th>Average Rating</th>
                             <th class="text-center">Action</th>
@@ -24,11 +23,11 @@
                     <tbody>
                         <?php
                         $i = 1;
-                        $qry = $conn->query("
+                                                $qry = $conn->query("
                             SELECT 
                                 f.id, 
                                 f.school_id, 
-                                CONCAT(f.firstname, ' ', f.lastname) AS name, 
+                                CONCAT(f.firstname, ' ', f.school_id, ' ', f.lastname) AS name, 
                                 f.email, 
                                 IFNULL(ROUND(AVG(ea.rate), 2), 0) AS average_rating 
                             FROM faculty_list f
@@ -39,28 +38,32 @@
                         ");
 
                         while ($row = $qry->fetch_assoc()):
-                        ?>
-                        <tr>
-                            <th class="text-center"><?php echo $i++ ?></th>
-                            <td><b><?php echo $row['school_id'] ?></b></td>
-                            <td><b><?php echo ucwords($row['name']) ?></b></td>
-                            <td><b><?php echo $row['email'] ?></b></td>
-                            <td><b><?php echo number_format($row['average_rating'], 2) ?></b></td>
-                            <td class="text-center">
-                                <div class="dropdown">
-                                    <button type="button" class="btn btn-default btn-sm btn-flat border-info wave-effect text-info dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
-                                        Action
-                                    </button>
-                                    <div class="dropdown-menu">
-                                        <a class="dropdown-item view_faculty" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>">View</a>
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="./index.php?page=edit_faculty&id=<?php echo $row['id'] ?>">Edit</a>
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item delete_faculty" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>">Delete</a>
+                            ?>
+                            <tr>
+                                <th class="text-center"><?php echo $i++ ?></th>
+                                <td><b><?php echo ucwords($row['name']) ?></b></td>
+                                <td><b><?php echo $row['email'] ?></b></td>
+                                <td><b><?php echo number_format($row['average_rating'], 2) ?></b></td>
+                                <td class="text-center">
+                                    <div class="dropdown">
+                                        <button type="button"
+                                            class="btn btn-default btn-sm btn-flat border-info wave-effect text-info dropdown-toggle"
+                                            data-toggle="dropdown" aria-expanded="true">
+                                            Action
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item view_faculty" href="javascript:void(0)"
+                                                data-id="<?php echo $row['id'] ?>">View</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item"
+                                                href="./index.php?page=edit_faculty&id=<?php echo $row['id'] ?>">Edit</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item delete_faculty" href="javascript:void(0)"
+                                                data-id="<?php echo $row['id'] ?>">Delete</a>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
                         <?php endwhile; ?>
                     </tbody>
                 </table>
@@ -83,21 +86,22 @@
         position: absolute !important;
         z-index: 1050 !important;
     }
+
     .dropdown-menu .dropdown-item {
         pointer-events: auto !important;
     }
 </style>
 
 <script>
-    $(document).ready(function(){
+    $(document).ready(function () {
         // Use event delegation to handle dynamic elements
-        $(document).on('click', '.view_faculty', function(e){
+        $(document).on('click', '.view_faculty', function (e) {
             e.stopPropagation(); // Prevent dropdown from closing on click
             let faculty_id = $(this).data('id');
             uni_modal("<i class='fa fa-id-card'></i> Faculty Details", "<?php echo $_SESSION['login_view_folder'] ?>view_faculty.php?id=" + faculty_id);
         });
 
-        $(document).on('click', '.delete_faculty', function(e){
+        $(document).on('click', '.delete_faculty', function (e) {
             e.stopPropagation(); // Prevent dropdown from closing
             let faculty_id = $(this).data('id');
             _conf("Are you sure to delete this faculty?", "delete_faculty", [faculty_id]);
@@ -116,11 +120,11 @@
         $.ajax({
             url: 'ajax.php?action=delete_faculty',
             method: 'POST',
-            data: {id: id},
-            success: function(resp) {
+            data: { id: id },
+            success: function (resp) {
                 if (resp == 1) {
                     alert_toast("Data successfully deleted", 'success');
-                    setTimeout(function(){
+                    setTimeout(function () {
                         location.reload();
                     }, 1500);
                 }
