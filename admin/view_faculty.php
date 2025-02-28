@@ -1,8 +1,8 @@
-<?php include '../db_connect.php' ?>
+<?php include '../db_connect.php'; ?>
 <?php
 if (isset($_GET['id'])) {
     // Fetch faculty details
-    $qry = $conn->query("SELECT *, concat(firstname,' ',lastname) as name FROM faculty_list WHERE id = " . $_GET['id'])->fetch_array();
+    $qry = $conn->query("SELECT *, CONCAT(firstname, ' ', lastname) AS name FROM faculty_list WHERE id = " . $_GET['id'])->fetch_array();
     foreach ($qry as $k => $v) {
         $$k = $v;
     }
@@ -19,7 +19,7 @@ if (isset($_GET['id'])) {
 
     // Get the total number of reviews and the rating distribution
     $rating_query = $conn->query(
-        "SELECT rate, COUNT(*) as count
+        "SELECT rate, COUNT(*) AS count
         FROM evaluation_answers
         JOIN evaluation_list ON evaluation_list.evaluation_id = evaluation_answers.evaluation_id
         WHERE evaluation_list.faculty_id = " . $_GET['id'] . "
@@ -58,89 +58,149 @@ if (isset($_GET['id'])) {
     $academic_year = $academic_year_query->fetch_assoc()['year'] ?? 'N/A';
 
     // Fetch comments for sentiment analysis
+// Fetch comments for sentiment analysis
     $comments_query = $conn->query(
         "SELECT evaluation_answers.comments
-        FROM evaluation_answers
-        JOIN evaluation_list ON evaluation_list.evaluation_id = evaluation_answers.evaluation_id
-        WHERE evaluation_list.faculty_id = " . $_GET['id']
+    FROM evaluation_answers
+    JOIN evaluation_list ON evaluation_list.evaluation_id = evaluation_answers.evaluation_id
+    WHERE evaluation_list.faculty_id = " . $_GET['id']
     );
-
 
     $comments = [];
     while ($row = $comments_query->fetch_assoc()) {
         $comments[] = $row['comments'];
     }
 
-    // Sentiment analysis
+    // Stop words to be removed before analysis
+    $stop_words = [
+        'the',
+        'is',
+        'at',
+        'which',
+        'on',
+        'and',
+        'to',
+        'for',
+        'with',
+        'a',
+        'an',
+        'of',
+        'in',
+        'he',
+        'she',
+        'He',
+        'She',
+        'His',
+        'his',
+        'really'
+    ];
+
+    // Positive and negative phrases for context-aware sentiment analysis
     $positive_words = [
-        'good',
-        'great',
-        'excellent',
-        'amazing',
-        'extraordinary',
-        'fantastic',
-        'outstanding',
-        'wonderful',
-        'impressive',
-        'superb',
-        'remarkable',
-        'brilliant',
-        'fabulous',
-        'phenomenal',
-        'terrific',
-        'magnificent',
-        'exceptional'
+        'excellent teacher',
+        'great teaching',
+        'amazing teacher',
+        'very good',
+        'outstanding teacher',
+        'best teaching experience',
+        'highly recommended teacher',
+        'superb teacher',
+        'brilliant teaching',
+        'remarkable teacher',
+        'good teacher',
+        'good teaching',
+        'very nice teacher'
     ];
 
     $negative_words = [
-        'poor',
-        'bad',
-        'terrible',
-        'awful',
-        'mediocre',
-        'not',
-        'horrible',
-        'subpar',
-        'dismal',
-        'atrocious',
-        'lousy',
-        'unpleasant',
-        'inferior',
-        'unsatisfactory',
-        'unacceptable',
-        'disappointing',
-        'lackluster'
+        'bad teaching',
+        'not good',
+        'bad at',
+        'very bad',
+        'poor teacher',
+        'bad teacher',
+        'horrible teacher',
+        'mediocre teacher',
+        'awful teacher',
+        'terrible teacher',
+        'not good in teaching',
+        'bad in teaching',
+        'poor teaching',
+        'disappointing teaching',
+        'subpar teacher',
+        'not good teacher'
     ];
 
+    // Initialize counters for positive and negative sentiment
     $positive_count = 0;
     $negative_count = 0;
 
-    foreach ($comments as $comment) {
-        foreach ($positive_words as $word) {
-            if (stripos($comment, $word) !== false) {
-                $positive_count++;
-                break;
+    // Function to handle both two-word and three-word phrases
+    function handle_phrases($sentence, $positive_words, $negative_words, $stop_words)
+    {
+        // Convert sentence to lowercase for case-insensitive comparison
+        $sentence_lower = strtolower($sentence);
+
+        // Remove stop words
+        $words = explode(' ', $sentence_lower);
+        $filtered_words = array_diff($words, $stop_words);
+        $sentence_lower = implode(' ', $filtered_words);
+
+        // Check if "not good" appears anywhere in the sentence; prioritize negative sentiment
+        if (strpos($sentence_lower, 'not good') !== false) {
+            return ['negative', 'not good'];
+        }
+
+        // Check for negative phrases
+        foreach ($negative_words as $phrase) {
+            if (strpos($sentence_lower, strtolower($phrase)) !== false) {
+                return ['negative', $phrase];
             }
         }
-        foreach ($negative_words as $word) {
-            if (stripos($comment, $word) !== false) {
-                $negative_count++;
-                break;
+
+        // Check for positive phrases
+        foreach ($positive_words as $phrase) {
+            if (strpos($sentence_lower, strtolower($phrase)) !== false) {
+                return ['positive', $phrase];
             }
+        }
+
+        return ['neutral', null];
+    }
+
+    // Analyze sentiment of each comment
+    $unique_comments = array_unique($comments);
+    foreach ($unique_comments as $comment) {
+        list($sentiment, $phrase) = handle_phrases($comment, $positive_words, $negative_words, $stop_words);
+
+        // // Log the detected sentiment and the matching phrase
+        // echo "Comment: \"$comment\"<br>";
+        // echo "Sentiment: $sentiment<br>";
+        // echo "Matching Phrase: $phrase<br><br>";
+
+        if ($sentiment == 'positive') {
+            $positive_count++;
+        } elseif ($sentiment == 'negative') {
+            $negative_count++;
         }
     }
 
-    $sentiment = 'Neutral';
+    // Determine overall sentiment
     if ($positive_count > $negative_count) {
         $sentiment = 'Positive';
     } elseif ($negative_count > $positive_count) {
         $sentiment = 'Negative';
+    } else {
+        $sentiment = 'Neutral';
     }
-    // Fetch the academic year from the database
+
+
+    // Fetch the academic year from the database again (for possible duplicate call in original code)
     $academic_year_query = $conn->query("SELECT year FROM academic_list WHERE id = " . $_GET['id']);
     $academic_year = $academic_year_query->fetch_assoc()['year'] ?? 'N/A';
 }
 ?>
+
 
 <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
     <div class="row">
@@ -153,7 +213,8 @@ if (isset($_GET['id'])) {
                 </div>
                 <div class="widget-user-image">
                     <?php if (empty($avatar) || (!empty($avatar) && !is_file('../assets/uploads/' . $avatar))): ?>
-                        <span class="brand-image img-circle elevation-2 d-flex justify-content-center align-items-center bg-primary text-white font-weight-500"
+                        <span
+                            class="brand-image img-circle elevation-2 d-flex justify-content-center align-items-center bg-primary text-white font-weight-500"
                             style="width: 90px; height: 90px;">
                             <h5><?php echo strtoupper(substr($firstname, 0, 1) . substr($lastname, 0, 1)) ?></h5>
                         </span>
@@ -177,7 +238,8 @@ if (isset($_GET['id'])) {
                                 <dl>
                                     <dt>Status</dt>
                                     <dd>
-                                        <span class="badge <?php echo ($status == 'Positive') ? 'badge-success' : (($status == 'Average') ? 'badge-warning' : 'badge-danger') ?>">
+                                        <span
+                                            class="badge <?php echo ($status == 'Positive') ? 'badge-success' : (($status == 'Average') ? 'badge-warning' : 'badge-danger') ?>">
                                             <?php echo $status ?>
                                         </span>
                                     </dd>
@@ -216,60 +278,46 @@ if (isset($_GET['id'])) {
                 </div>
                 <div class="card-body">
                     <?php
-                    // Remove duplicate comments
-                    $unique_comments = array_unique($comments);
-
                     // Initialize counts for unique positive and negative comments
                     $unique_positive_count = 0;
                     $unique_negative_count = 0;
 
-                    // Determine sentiment for each unique comment
                     foreach ($unique_comments as $comment) {
-                        $comment_sentiment = 'Neutral';
+                        list($comment_sentiment, $matched_phrase) = handle_phrases($comment, $positive_words, $negative_words, $stop_words);
 
-                        // Check for positive sentiment
-                        foreach ($positive_words as $word) {
-                            if (stripos($comment, $word) !== false) {
-                                $comment_sentiment = 'Positive';
-                                break;
-                            }
-                        }
+                        // Standardize sentiment values
+                        $comment_sentiment = trim(strtolower($comment_sentiment));
 
-                        // Check for negative sentiment if it's neutral
-                        if ($comment_sentiment === 'Neutral') {
-                            foreach ($negative_words as $word) {
-                                if (stripos($comment, $word) !== false) {
-                                    $comment_sentiment = 'Negative';
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Update counts based on sentiment
-                        if ($comment_sentiment === 'Positive') {
+                        if ($comment_sentiment === 'positive') {
                             $unique_positive_count++;
-                        } elseif ($comment_sentiment === 'Negative') {
+                        } elseif ($comment_sentiment === 'negative') {
                             $unique_negative_count++;
                         }
                     }
+
+                    // Determine overall sentiment
+                    $overall_sentiment = ($unique_positive_count > $unique_negative_count) ? 'Positive' :
+                        (($unique_negative_count > $unique_positive_count) ? 'Negative' : 'Neutral');
                     ?>
 
                     <dl>
                         <dt>Positive Comments</dt>
-                        <dd><?php echo $unique_positive_count ?></dd>
+                        <dd><?php echo $unique_positive_count; ?></dd>
                         <dt>Negative Comments</dt>
-                        <dd><?php echo $unique_negative_count ?></dd>
+                        <dd><?php echo $unique_negative_count; ?></dd>
                         <dt>Overall Sentiment</dt>
                         <dd>
-                            <span class="badge <?php echo ($sentiment == 'Positive') ? 'badge-success' : (($sentiment == 'Negative') ? 'badge-danger' : 'badge-warning') ?>">
-                                <?php echo $sentiment ?>
+                            <span class="badge 
+                        <?php echo ($overall_sentiment == 'Positive') ? 'bg-success' :
+                            (($overall_sentiment == 'Negative') ? 'bg-danger' : 'bg-warning'); ?>">
+                                <?php echo $overall_sentiment; ?>
                             </span>
                         </dd>
                     </dl>
 
                     <!-- Table to display unique comments and their sentiment -->
                     <table class="table table-bordered">
-                        <thead>
+                        <thead class="thead-dark">
                             <tr>
                                 <th>Comment</th>
                                 <th>Sentiment</th>
@@ -278,26 +326,26 @@ if (isset($_GET['id'])) {
                         <tbody>
                             <?php foreach ($unique_comments as $comment): ?>
                                 <?php
-                                // Determine sentiment of the individual comment
-                                $comment_sentiment = 'Neutral';
-                                foreach ($positive_words as $word) {
-                                    if (stripos($comment, $word) !== false) {
-                                        $comment_sentiment = 'Positive';
-                                        break;
-                                    }
-                                }
-                                if ($comment_sentiment === 'Neutral') {
-                                    foreach ($negative_words as $word) {
-                                        if (stripos($comment, $word) !== false) {
-                                            $comment_sentiment = 'Negative';
-                                            break;
-                                        }
-                                    }
+                                list($comment_sentiment, $matched_phrase) = handle_phrases($comment, $positive_words, $negative_words, $stop_words);
+
+                                // Standardize sentiment values
+                                $comment_sentiment = trim(strtolower($comment_sentiment));
+
+                                // Set class based on sentiment
+                                $badge_class = 'bg-warning'; // Default to yellow
+                                if ($comment_sentiment == 'positive') {
+                                    $badge_class = 'bg-success'; // Green
+                                } elseif ($comment_sentiment == 'negative') {
+                                    $badge_class = 'bg-danger'; // Red
                                 }
                                 ?>
                                 <tr>
                                     <td><?php echo nl2br(htmlspecialchars($comment)); ?></td>
-                                    <td><span class="badge <?php echo ($comment_sentiment == 'Positive') ? 'badge-success' : (($comment_sentiment == 'Negative') ? 'badge-danger' : 'badge-warning') ?>"><?php echo $comment_sentiment ?></span></td>
+                                    <td>
+                                        <span class="badge <?php echo $badge_class; ?> text-white">
+                                            <?php echo ucfirst($comment_sentiment); ?>
+                                        </span>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -305,6 +353,8 @@ if (isset($_GET['id'])) {
                 </div>
             </div>
         </div>
+
+
 
     </div>
 </div>
@@ -331,7 +381,33 @@ if (isset($_GET['id'])) {
     #uni_modal .modal-content {
 
         width: 1000px;
-        margin-left: -120px;
+        margin-left: -220px;
+    }
+
+    @media (max-width: 768px) {
+        #uni_modal .modal-content {
+            width: 95%;
+            /* Increase width for smaller screens */
+            margin-left: 0;
+            /* Remove negative margin */
+        }
+
+        #uni_modal .modal-footer.display {
+            margin-left: 0;
+        }
+    }
+
+    .chart-container {
+        width: 100%;
+        max-width: 1000px;
+        /* Adjust as needed */
+        overflow-x: auto;
+        /* Enables horizontal scrolling if necessary */
+    }
+
+    canvas {
+        width: 100% !important;
+        height: auto !important;
     }
 </style>
 
@@ -375,7 +451,7 @@ if (isset($_GET['id'])) {
             plugins: {
                 tooltip: {
                     callbacks: {
-                        afterLabel: function(context) {
+                        afterLabel: function (context) {
                             var percentage = <?php echo json_encode($rating_percentages); ?>;
                             return percentage[context.raw] + '% of total reviews';
                         }

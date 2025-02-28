@@ -56,41 +56,44 @@ include '../db_connect.php';
 				</div>
 			</div>
 			<div class="col-md-8">
-				<table class="table table-condensed" id="r-list">
-					<thead>
-						<tr>
-							<th>Faculty</th>
-							<th>Class</th>
-							<th>Subject</th>
-							<th>Action</th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php 
-						$restriction = $conn->query("SELECT * FROM restriction_list where academic_id = {$_GET['id']} order by id asc");
-						while($row=$restriction->fetch_assoc()):
-						?>
-						<tr>
-							<td>
-								<b><?php echo isset($f_arr[$row['faculty_id']]) ? $f_arr[$row['faculty_id']]['name'] : '' ?></b>
-								<input type="hidden" name="rid[]" value="<?php echo $row['id'] ?>">
-								<input type="hidden" name="faculty_id[]" value="<?php echo $row['faculty_id'] ?>">
-							</td>
-							<td>
-								<b><?php echo isset($c_arr[$row['class_id']]) ? $c_arr[$row['class_id']]['class'] : '' ?></b>
-								<input type="hidden" name="class_id[]" value="<?php echo $row['class_id'] ?>">
-							</td>
-							<td>
-								<b><?php echo isset($s_arr[$row['subject_id']]) ? $s_arr[$row['subject_id']]['subj'] : '' ?></b>
-								<input type="hidden" name="subject_id[]" value="<?php echo $row['class_id'] ?>">
-							</td>
-							<td class="text-center">
-								<button class="btn btn-sm btn-outline-danger" onclick="$(this).closest('tr').remove()" type="button"><i class="fa fa-trash"></i></button>
-							</td>
-						</tr>
-					<?php endwhile; ?>
-					</tbody>
-				</table>
+            <div class="table-responsive">
+    <table class="table table-condensed" id="r-list">
+        <thead>
+            <tr>
+                <th>Faculty</th>
+                <th>Class</th>
+                <th>Subject</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php 
+            $restriction = $conn->query("SELECT * FROM restriction_list where academic_id = {$_GET['id']} order by id asc");
+            while($row=$restriction->fetch_assoc()):
+            ?>
+            <tr>
+                <td>
+                    <b><?php echo isset($f_arr[$row['faculty_id']]) ? $f_arr[$row['faculty_id']]['name'] : '' ?></b>
+                    <input type="hidden" name="rid[]" value="<?php echo $row['id'] ?>">
+                    <input type="hidden" name="faculty_id[]" value="<?php echo $row['faculty_id'] ?>">
+                </td>
+                <td>
+                    <b><?php echo isset($c_arr[$row['class_id']]) ? $c_arr[$row['class_id']]['class'] : '' ?></b>
+                    <input type="hidden" name="class_id[]" value="<?php echo $row['class_id'] ?>">
+                </td>
+                <td>
+                    <b><?php echo isset($s_arr[$row['subject_id']]) ? $s_arr[$row['subject_id']]['subj'] : '' ?></b>
+                    <input type="hidden" name="subject_id[]" value="<?php echo $row['subject_id'] ?>">
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-danger" onclick="$(this).closest('tr').remove()" type="button"><i class="fa fa-trash"></i></button>
+                </td>
+            </tr>
+            <?php endwhile; ?>
+        </tbody>
+    </table>
+</div>
+
 			</div>
 		</div>
 	</form>
