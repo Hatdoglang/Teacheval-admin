@@ -8,11 +8,11 @@
   
   /* Custom yellow navbar */
   .navbar-custom {
-      background-color:rgb(244, 240, 7)   !important; /* Change navbar background to yellow */
+      background-color:rgb(244, 244, 244)   !important; /* Change navbar background to yellow */
   }
 
   .nav-link{
-    color: #fff !important;
+    color: #000 !important;
   }
 </style>
 
