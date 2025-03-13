@@ -122,66 +122,54 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  $('#manage_account').click(function(){
-    uni_modal('Manage Account','manage_user.php?id=<?php echo $_SESSION['login_id'] ?>');
-  });
+function updateNotificationCount() {
+  $.ajax({
+    url: './admin/get_notifications.php',
+    method: 'GET',
+    dataType: 'json',
+    success: function(response) {
+      let notifDropdown = $('#notif-dropdown');
+      notifDropdown.find('.notif-item').remove(); // Clear old notifications
 
-  $(document).ready(function() {
-  function updateNotificationCount() {
-    $.ajax({
-      url: './admin/get_notifications.php',
-      method: 'GET',
-      dataType: 'json',
-      success: function(response) {
-        let notifDropdown = $('#notif-dropdown');
-        notifDropdown.find('.notif-item').remove(); // Clear old notifications
+      if (response.evaluations.length > 0) {
+        response.evaluations.forEach(evaluation => {
+          let timestamp = evaluation.timestamp;
+          let message = `<strong>Evaluation Done</strong><br><strong>Submitted:</strong> ${timestamp}`;
+          notifDropdown.prepend(`<div class="dropdown-item notif-item">${message}</div>`);
+        });
 
-        if (response.evaluations.length > 0) {
-          response.evaluations.forEach(evaluation => {
-            let timestamp = evaluation.timestamp;
-
-            let message = `<strong>Evaluation Done</strong><br>
-                           <strong>Submitted:</strong> ${timestamp}`;
-
-            notifDropdown.prepend(`<div class="dropdown-item notif-item">${message}</div>`);
-          });
-
-          $('#notif-count').text(response.evaluations.length).show();
-        } else {
-          $('#notif-count').hide();
+        // Show count only if there are new notifications
+        let count = response.evaluations.length;
+        if (count > 0) {
+          $('#notif-count').text(count).show();
         }
+      } else {
+        $('#notif-count').hide();
       }
-    });
-  }
+    }
+  });
+}
 
-  updateNotificationCount();
+$(document).ready(function() {
+  updateNotificationCount(); // Load notifications on page load
 
-  $('#notif-icon').click(function() {
+  $('#notif-btn').click(function() {
+    // Hide the count, but don't remove notifications from the dropdown
     $('#notif-count').hide();
-    $('#notif-dropdown').find('.notif-item').remove();
 
+    // Mark notifications as seen
     $.ajax({
       url: './admin/mark_notifications_seen.php',
-      method: 'POST'
+      method: 'POST',
+      success: function() {
+        console.log("Notifications marked as seen.");
+      }
     });
   });
 });
 
-
-
-
-
-
-  setInterval(updateNotificationCount, 10000); // Refresh every 10 seconds
-  $(document).ready(updateNotificationCount);
-
-  $('#view-notifications').click(function() {
-    $.ajax({
-      url: 'mark_notifications_read.php',
-      method: 'POST',
-      success: function() {
-        $('#notif-count').hide();
-      }
-    });
-  });
+// Refresh notifications every 10 seconds
+setInterval(updateNotificationCount, 10000);
 </script>
+
+
