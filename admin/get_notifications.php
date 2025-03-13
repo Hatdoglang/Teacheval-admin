@@ -4,17 +4,17 @@ include '../db_connect.php';
 
 header('Content-Type: application/json');
 
-$current_date = date("Y-m-d");
+// Set the start date (March 13, 2025) without an end date
+$start_date = "2025-03-13";
 
-// Fetch evaluations submitted today at or after '15:23:15'
-$sql = "SELECT evaluation_id, MIN(timestamp) as timestamp 
+// Prepare SQL query to fetch records from this date onward
+$sql = "SELECT evaluation_id, timestamp 
         FROM evaluation_answers 
-        WHERE DATE(timestamp) = ? AND TIME(timestamp) >= '15:23:15' 
-        GROUP BY evaluation_id 
-        ORDER BY evaluation_id, timestamp";
+        WHERE timestamp >= ? 
+        ORDER BY timestamp ASC";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $current_date);
+$stmt->bind_param("s", $start_date);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -27,5 +27,11 @@ while ($row = $result->fetch_assoc()) {
     ];
 }
 
-echo json_encode(['evaluations' => $evaluations]);
+// Debugging: Check if any data is found
+if (empty($evaluations)) {
+    echo json_encode(['error' => 'No data found from 3/13/2025 onward']);
+    exit;
+}
+
+echo json_encode(['evaluations' => $evaluations], JSON_PRETTY_PRINT);
 ?>
