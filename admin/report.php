@@ -84,6 +84,9 @@ function ordinal_suffix($num)
                         </tr>
                     </table>
                     <p class=""><b>Total Student Evaluated: <span id="tse"></span></b></p>
+                    <div class="mt-2">
+                  <b>Grand Overall Rating: <span id="final_overall_total">-</span></b>
+                </div>
                 </div>
                 <fieldset class="border border-info p-2 w-100">
                     <legend class="w-auto">Rating Legend</legend>
@@ -109,7 +112,7 @@ function ordinal_suffix($num)
                             <th width="5%" class="text-center">3</th>
                             <th width="5%" class="text-center">4</th>
                             <th width="5%" class="text-center">5</th>
-                            <th width="10%"class="text-center">Overall %</th>
+                            <th width="10%"class="text-center" >Overall %</th>
                         </tr>
                     </thead>
                     <tbody class="tr-sortable">
@@ -136,7 +139,7 @@ function ordinal_suffix($num)
                         <?php endwhile; ?>
                     </tbody>
                     <tfoot>
-                        <tr class="bg-light">
+                        <tr class="bg-light" style="display: none;">
                             <td class="p-1"><b>Overall Total</b></td>
                             <td colspan="5" class="text-center"><b>Average Rating:</b></td>
                             <!-- UNIQUE SELECTOR FOR THIS CRITERIA -->
@@ -146,11 +149,9 @@ function ordinal_suffix($num)
                 </table>
                 <?php endwhile; ?>
 
-                <!-- If you want one grand overall average across all criteria, add a row here:
-                <div class="mt-2">
-                  <b>Grand Overall Average: <span id="final_overall_total">-</span></b>
-                </div>
-                -->
+                <!-- If you want one grand overall average across all criteria, add a row here: -->
+                
+               
             </div>
         </div>
     </div>
@@ -330,7 +331,7 @@ function ordinal_suffix($num)
                             });
 
                             // (Optional) If you want one "grand overall" for ALL criteria, do it here:
-                            /*
+                            
                             var grandSum = 0, grandCount = 0;
                             Object.keys(criteriaTotals).map(cId => {
                                 if (criteriaTotals[cId].count > 0) {
@@ -344,7 +345,6 @@ function ordinal_suffix($num)
                                 ? (grandSum / grandCount).toFixed(2) + '%' 
                                 : '-';
                             $('#final_overall_total').text(finalOverallAvg);
-                            */
                         }
                     }
                 },
