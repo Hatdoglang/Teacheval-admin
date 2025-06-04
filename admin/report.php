@@ -68,9 +68,10 @@ function ordinal_suffix($num)
                             </td>
                             <td width="50%">
                                 <p><b>Academic Year:
-                                    <span id="ay">
-                                        <?php echo $_SESSION['academic']['year'] . ' ' . (ordinal_suffix($_SESSION['academic']['semester'])) ?> Semester
-                                    </span></b>
+                                        <span id="ay">
+                                            <?php echo $_SESSION['academic']['year'] . ' ' . (ordinal_suffix($_SESSION['academic']['semester'])) ?>
+                                            Semester
+                                        </span></b>
                                 </p>
                             </td>
                         </tr>
@@ -85,8 +86,8 @@ function ordinal_suffix($num)
                     </table>
                     <p class=""><b>Total Student Evaluated: <span id="tse"></span></b></p>
                     <div class="mt-2">
-                  <b>Grand Overall Rating: <span id="final_overall_total">-</span></b>
-                </div>
+                        <b>Grand Overall Rating: <span id="final_overall_total">-</span></b>
+                    </div>
                 </div>
                 <fieldset class="border border-info p-2 w-100">
                     <legend class="w-auto">Rating Legend</legend>
@@ -102,56 +103,58 @@ function ordinal_suffix($num)
                     ) 
                     ORDER BY ABS(order_by) ASC");
                 while ($crow = $criteria->fetch_assoc()):
-                ?>
-                <table class="table table-condensed wborder" data-criteria-id="<?php echo $crow['id']; ?>">
-                    <thead>
-                        <tr class="bg-gradient-secondary">
-                            <th class="p-1"><b><?php echo $crow['criteria'] ?></b></th>
-                            <th width="5%" class="text-center">1</th>
-                            <th width="5%" class="text-center">2</th>
-                            <th width="5%" class="text-center">3</th>
-                            <th width="5%" class="text-center">4</th>
-                            <th width="5%" class="text-center">5</th>
-                            <th width="10%"class="text-center" >Overall %</th>
-                        </tr>
-                    </thead>
-                    <tbody class="tr-sortable">
-                        <?php
-                        $questions = $conn->query("SELECT * FROM question_list 
+                    ?>
+                    <table class="table table-condensed wborder" data-criteria-id="<?php echo $crow['id']; ?>">
+                        <thead>
+                            <tr class="bg-gradient-secondary">
+                                <th class="p-1"><b><?php echo $crow['criteria'] ?></b></th>
+                                <th width="5%" class="text-center">1</th>
+                                <th width="5%" class="text-center">2</th>
+                                <th width="5%" class="text-center">3</th>
+                                <th width="5%" class="text-center">4</th>
+                                <th width="5%" class="text-center">5</th>
+                                <th width="10%" class="text-center">
+                                    <span class="criteria_rating_head"
+                                        data-criteria-id="<?php echo $crow['id']; ?>">-</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="tr-sortable">
+                            <?php
+                            $questions = $conn->query("SELECT * FROM question_list 
                             WHERE criteria_id = {$crow['id']} 
                               AND academic_id = {$_SESSION['academic']['id']} 
                             ORDER BY ABS(order_by) ASC");
-                        while ($row = $questions->fetch_assoc()):
-                        ?>
-                        <tr class="bg-white question-row" 
-                            data-qid="<?php echo $row['id']; ?>" 
-                            data-cid="<?php echo $crow['id']; ?>">
-                            <td class="p-1" width="40%">
-                                <?php echo $row['question'] ?>
-                            </td>
-                            <?php for ($c = 1; $c <= 5; $c++): ?>
-                                <td class="text-center">
-                                    <span class="rate_<?php echo $c . '_' . $row['id']; ?> rates"></span>
-                                </td>
-                            <?php endfor; ?>
-                            <td class="text-center overall_<?php echo $row['id']; ?>">-</td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                    <tfoot>
-                        <tr class="bg-light" style="display: none;">
-                            <td class="p-1"><b>Overall Total</b></td>
-                            <td colspan="5" class="text-center"><b>Average Rating:</b></td>
-                            <!-- UNIQUE SELECTOR FOR THIS CRITERIA -->
-                            <td class="text-center overall_total" data-criteria-id="<?php echo $crow['id']; ?>">-</td>
-                        </tr>
-                    </tfoot>
-                </table>
+                            while ($row = $questions->fetch_assoc()):
+                                ?>
+                                <tr class="bg-white question-row" data-qid="<?php echo $row['id']; ?>"
+                                    data-cid="<?php echo $crow['id']; ?>">
+                                    <td class="p-1" width="40%">
+                                        <?php echo $row['question'] ?>
+                                    </td>
+                                    <?php for ($c = 1; $c <= 5; $c++): ?>
+                                        <td class="text-center">
+                                            <span class="rate_<?php echo $c . '_' . $row['id']; ?> rates"></span>
+                                        </td>
+                                    <?php endfor; ?>
+                                    <td class="text-center overall_<?php echo $row['id']; ?>">-</td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-success text-white" style="display: none;">
+                                <td class="p-1"><b>Criteria rating:</b></td>
+                                <td colspan="5" class="text-center"><b></b></td>
+                                <!-- UNIQUE SELECTOR FOR THIS CRITERIA -->
+                                <td class="text-center overall_total" data-criteria-id="<?php echo $crow['id']; ?>">-</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 <?php endwhile; ?>
 
                 <!-- If you want one grand overall average across all criteria, add a row here: -->
-                
-               
+
+
             </div>
         </div>
     </div>
@@ -167,22 +170,27 @@ function ordinal_suffix($num)
                 width: 100%;
                 border-collapse: collapse;
             }
+
             table.wborder tr,
             table.wborder td,
             table.wborder th {
                 border: 1px solid gray;
                 padding: 3px
             }
+
             table.wborder thead tr {
                 background: #6c757d linear-gradient(180deg, #828a91, #6c757d) repeat-x !important;
                 color: #fff;
             }
+
             .text-center {
                 text-align: center;
             }
+
             .text-right {
                 text-align: right;
             }
+
             .text-left {
                 text-align: left;
             }
@@ -223,7 +231,7 @@ function ordinal_suffix($num)
                             $('#class-list').html('')
                             Object.keys(resp).map(k => {
                                 $('#class-list').append(
-                                    '<a href="javascript:void(0)" data-json=\'' + JSON.stringify(resp[k]) + '\' data-id="' 
+                                    '<a href="javascript:void(0)" data-json=\'' + JSON.stringify(resp[k]) + '\' data-id="'
                                     + resp[k].id + '" class="list-group-item list-group-item-action show-result">'
                                     + resp[k].class + ' - ' + resp[k].subj + '</a>'
                                 )
@@ -296,19 +304,19 @@ function ordinal_suffix($num)
                                 // Fill the per-rating % cells
                                 Object.keys(data[q]).map(r => {
                                     var percentage = data[q][r] || 0;
-                                    $('.rate_' + r + '_' + q).text(percentage + '%');
+                                    // $('.rate_' + r + '_' + q).text(percentage + '%');
                                     totalSum += parseFloat(percentage) * parseInt(r);
                                     totalResponses += parseFloat(percentage);
                                 });
 
                                 // Compute the question-level average
-                                var avgPercentage = (totalResponses > 0) 
-                                    ? (totalSum / totalResponses).toFixed(2) 
+                                var avgPercentage = (totalResponses > 0)
+                                    ? (totalSum / totalResponses).toFixed(2)
                                     : '-';
-                                $('.overall_' + q).text(avgPercentage + '%');
+                                // $('.overall_' + q).text(avgPercentage + '%');
 
                                 // Identify the criterion for this question
-                                var cId = $('.question-row[data-qid="'+ q +'"]').attr('data-cid');
+                                var cId = $('.question-row[data-qid="' + q + '"]').attr('data-cid');
 
                                 // Track sums in our criteriaTotals object
                                 if (!criteriaTotals[cId]) {
@@ -321,17 +329,23 @@ function ordinal_suffix($num)
                             });
 
                             // Now compute the overall average per criterion
+                            // Now compute the overall average per criterion
                             Object.keys(criteriaTotals).map(cId => {
                                 var finalAvg = '-';
                                 if (criteriaTotals[cId].count > 0) {
                                     finalAvg = (criteriaTotals[cId].sum / criteriaTotals[cId].count).toFixed(2) + '%';
                                 }
+
                                 // Update the cell in the table foot for this criterion
                                 $('.overall_total[data-criteria-id="' + cId + '"]').text(finalAvg);
+
+                                // ✅ Update the header "Questions %" value too
+                                $('.criteria_rating_head[data-criteria-id="' + cId + '"]').text(finalAvg);
                             });
 
+
                             // (Optional) If you want one "grand overall" for ALL criteria, do it here:
-                            
+
                             var grandSum = 0, grandCount = 0;
                             Object.keys(criteriaTotals).map(cId => {
                                 if (criteriaTotals[cId].count > 0) {
@@ -341,8 +355,8 @@ function ordinal_suffix($num)
                                     grandCount++;
                                 }
                             });
-                            var finalOverallAvg = (grandCount > 0) 
-                                ? (grandSum / grandCount).toFixed(2) + '%' 
+                            var finalOverallAvg = (grandCount > 0)
+                                ? (grandSum / grandCount).toFixed(2) + '%'
                                 : '-';
                             $('#final_overall_total').text(finalOverallAvg);
                         }
@@ -355,50 +369,50 @@ function ordinal_suffix($num)
         }
 
         $('#print-btn').click(function () {
-    start_load();
+            start_load();
 
-    // Clone the entire printable area
-    var printContent = $('#printable').clone();
+            // Clone the entire printable area
+            var printContent = $('#printable').clone();
 
-    // Remove the Rating Legend fieldset if present
-    printContent.find('fieldset').remove();
+            // Remove the Rating Legend fieldset if present
+            printContent.find('fieldset').remove();
 
-    // For each criteria table (identified by a data-criteria-id attribute),
-    // extract the criteria name and overall average rating, then replace
-    // the table with a flex container showing them side by side.
-    printContent.find('table[data-criteria-id]').each(function(){
-        // Get criteria name from the first header cell
-        var criteriaName = $(this).find('thead th:first').text().trim();
-        // Get overall average rating from the footer cell with class "overall_total"
-        var overallRating = $(this).find('tfoot .overall_total').text().trim();
+            // For each criteria table (identified by a data-criteria-id attribute),
+            // extract the criteria name and overall average rating, then replace
+            // the table with a flex container showing them side by side.
+            printContent.find('table[data-criteria-id]').each(function () {
+                // Get criteria name from the first header cell
+                var criteriaName = $(this).find('thead th:first').text().trim();
+                // Get overall average rating from the footer cell with class "overall_total"
+                var overallRating = $(this).find('tfoot .overall_total').text().trim();
 
-        // Create a flex container with two spans:
-        // one for the criteria name and one for the overall rating
-        var newElem = $('<div>').css({
-            'display': 'flex',
-            'justify-content': 'space-between',
-            'font-size': '16px',
-            'margin': '3px 0'
+                // Create a flex container with two spans:
+                // one for the criteria name and one for the overall rating
+                var newElem = $('<div>').css({
+                    'display': 'flex',
+                    'justify-content': 'space-between',
+                    'font-size': '16px',
+                    'margin': '3px 0'
+                });
+                newElem.append($('<span>').text(criteriaName));
+                newElem.append($('<span>').text(': ' + overallRating));
+
+                // Replace the original table with this new element
+                $(this).replaceWith(newElem);
+            });
+
+            // Open a new window, write the final HTML, and print it
+            var nw = window.open("Report", "_blank", "width=900,height=700");
+            nw.document.write(printContent.html());
+            nw.document.close();
+            nw.print();
+
+            // Close the new window after a short delay
+            setTimeout(function () {
+                nw.close();
+                end_load();
+            }, 750);
         });
-        newElem.append($('<span>').text(criteriaName));
-        newElem.append($('<span>').text(': ' + overallRating));
-
-        // Replace the original table with this new element
-        $(this).replaceWith(newElem);
-    });
-
-    // Open a new window, write the final HTML, and print it
-    var nw = window.open("Report", "_blank", "width=900,height=700");
-    nw.document.write(printContent.html());
-    nw.document.close();
-    nw.print();
-
-    // Close the new window after a short delay
-    setTimeout(function () {
-        nw.close();
-        end_load();
-    }, 750);
-});
 
 
     </script>
