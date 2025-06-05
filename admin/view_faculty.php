@@ -120,6 +120,9 @@ if (isset($_GET['id'])) {
         'mahusay magpaliwanag',
         'dedikado sa mga estudyante',
         'nakakaengganyong leksyon'
+        'Maayu siya mutudlo',
+        'Permi on time siya muabot',
+        'Okay rapud siya mutudlo'
     ];
 
 
