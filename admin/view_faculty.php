@@ -17,20 +17,57 @@ if (isset($_GET['id'])) {
     $avg_result = $avg_query->fetch_assoc();
     $average_rating = round($avg_result['average_rating'] ?? 0, 2);
 
-    // Get the total number of reviews and the rating distribution
-    $rating_query = $conn->query(
-        "SELECT rate, COUNT(*) AS count
-        FROM evaluation_answers
-        JOIN evaluation_list ON evaluation_list.evaluation_id = evaluation_answers.evaluation_id
-        WHERE evaluation_list.faculty_id = " . $_GET['id'] . "
-        GROUP BY rate"
+    // 1. Get total unique students (distinct evaluation_id)
+    $student_query = $conn->query(
+        "SELECT COUNT(DISTINCT evaluation_list.evaluation_id) AS total_students
+     FROM evaluation_answers
+     JOIN evaluation_list ON evaluation_list.evaluation_id = evaluation_answers.evaluation_id
+     WHERE evaluation_list.faculty_id = " . $_GET['id']
     );
+    $total_students = $student_query->fetch_assoc()['total_students'];
+
+    // 2. Get rating distribution counting distinct evaluations per rating
+    $rating_query = $conn->query(
+        "SELECT evaluation_answers.rate, COUNT(DISTINCT evaluation_answers.evaluation_id) AS count
+     FROM evaluation_answers
+     JOIN evaluation_list ON evaluation_list.evaluation_id = evaluation_answers.evaluation_id
+     WHERE evaluation_list.faculty_id = " . $_GET['id'] . "
+     GROUP BY evaluation_answers.rate"
+    );
+
+    $faculty_id = intval($_GET['id']);
+
+$subject_query = $conn->query(
+    "SELECT s.subject
+     FROM restriction_list r
+     JOIN subject_list s ON s.id = r.subject_id
+     WHERE r.faculty_id = $faculty_id"
+);
+
+if (!$subject_query) {
+    die("Subject query failed: " . $conn->error);
+}
+
+$subjects = [];
+while ($row = $subject_query->fetch_assoc()) {
+    $subjects[] = $row['subject'];
+}
+
+$subject_names = !empty($subjects) ? implode(', ', $subjects) : 'No subjects assigned';
+
+
     $rating_data = [];
-    $total_students = 0;
     while ($row = $rating_query->fetch_assoc()) {
         $rating_data[$row['rate']] = $row['count'];
-        $total_students += $row['count'];
     }
+
+    // Optional: Ensure all ratings from 1 to 5 exist in the array with zero default
+    for ($i = 1; $i <= 5; $i++) {
+        if (!isset($rating_data[$i])) {
+            $rating_data[$i] = 0;
+        }
+    }
+
 
     // Ensure all ratings from 1 to 5 are represented
     for ($i = 1; $i <= 5; $i++) {
@@ -355,8 +392,16 @@ if (isset($_GET['id'])) {
                             <!-- Label-Value Pair for Total Students -->
                             <div class="col-md-6">
                                 <dl>
-                                    <dt>Total Students</dt>
+                                    <dt>Number of students</dt>
                                     <dd><?php echo $total_students; ?></dd>
+                                </dl>
+                            </div>
+                            <!-- Label-Value Subject they handle -->
+
+                            <div class="col-md-12">
+                                <dl>
+                                    <dt>Subjects Handled</dt>
+                                    <dd><?php echo htmlspecialchars($subject_names); ?></dd>
                                 </dl>
                             </div>
 
@@ -518,7 +563,7 @@ if (isset($_GET['id'])) {
         document.getElementById("loadingSpinner").style.display = "inline-block";
 
         // Reload the page after a short delay (1 second for effect)
-        setTimeout(function() {
+        setTimeout(function () {
             location.reload();
         }, 1000);
     }
@@ -575,6 +620,7 @@ if (isset($_GET['id'])) {
         },
         options: {
             responsive: true,
+            event: [],
             plugins: {
                 legend: {
                     display: true,
