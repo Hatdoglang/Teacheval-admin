@@ -392,7 +392,7 @@ $subject_names = !empty($subjects) ? implode(', ', $subjects) : 'No subjects ass
                             <!-- Label-Value Pair for Total Students -->
                             <div class="col-md-6">
                                 <dl>
-                                    <dt>Number of students</dt>
+                                    <dt>Number of students evaluated</dt>
                                     <dd><?php echo $total_students; ?></dd>
                                 </dl>
                             </div>
